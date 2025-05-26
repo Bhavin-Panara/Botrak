@@ -271,14 +271,6 @@ class CompanyPricePlansController extends Controller
         $user_priceplans = CompanyPricePlans::where('id', $id)->first();
         $user_priceplans->update($validated);
 
-        /* $user = User::where('id', $validated['company_id'])->first();
-        if ($user) {
-            $user->subscription_id = $validated['price_plan_id'];
-            $user->start_date = $validated['start_date'];
-            $user->end_date = $validated['end_date'];
-            $user->update();
-        } */
-
         return redirect()->route('company_priceplan.index')->with('success', 'Company Plan updated successfully.');
     }
 
