@@ -46,6 +46,8 @@ class UserAssignPlan extends Command
 
         foreach ($plansByCompany as $companyId => $companyPlans) {
             $companyPlans = $companyPlans->sortBy('start_date');
+            $updatedOrg = false;
+            $hasActivePlan = false;
 
             foreach ($companyPlans as $plan) {
                 $status = null;
@@ -54,6 +56,7 @@ class UserAssignPlan extends Command
                     $status = 'completed';
                 } elseif ($plan->start_date <= $today && (!$plan->end_date || $plan->end_date >= $today)) {
                     $status = 'continue';
+                    $hasActivePlan = true;
                 } elseif ($plan->start_date > $today) {
                     $status = 'next';
                 }
@@ -61,19 +64,22 @@ class UserAssignPlan extends Command
                 $plan->status = $status;
                 $plan->save();
 
-                if ($status === 'continue') {
+                if ($status === 'continue' && !$updatedOrg) {
                     Organizations::where('id', $companyId)->update([
                         'subscription_id' => $plan->price_plan_id,
                         'start_date' => $plan->start_date,
                         'end_date' => $plan->end_date
                     ]);
-                } else {
-                    Organizations::where('id', $companyId)->update([
-                        'subscription_id' => null,
-                        'start_date' => null,
-                        'end_date' => null
-                    ]);
+                    $updatedOrg = true;
                 }
+            }
+
+            if (!$hasActivePlan) {
+                Organizations::where('id', $companyId)->update([
+                    'subscription_id' => null,
+                    'start_date' => null,
+                    'end_date' => null
+                ]);
             }
         }
 
