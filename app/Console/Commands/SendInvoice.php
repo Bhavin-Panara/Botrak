@@ -57,6 +57,7 @@ class SendInvoice extends Command
 
             foreach ($companyPlans as $plan) {
                 // Compare start date with today
+                // if ($plan->start_date <= $today && (!$plan->end_date || $plan->end_date >= $today)) {
                 if (Carbon::parse($plan->start_date)->isSameDay($today)) {
                     $invoices = Invoices::with(['receiver', 'sender.organizations', 'companypriceplans.priceplan'])
                     ->whereNull('sent_date')
@@ -113,7 +114,7 @@ class SendInvoice extends Command
                                 $matchedTier = $price_paln_tiers->where('start_range', '<=', $asset_counts)->where('end_range', '>=', $asset_counts)->first();
 
                                 if ($matchedTier) {
-                                    $invoice_details['total_amount'] = $matchedTier->price;
+                                    $invoice_details['amount'] = $matchedTier->price;
                                 } else {
                                     $maxTier = $price_paln_tiers->sortByDesc('end_range')->first();
                                     if ($maxTier && $asset_counts > $maxTier->end_range) {
@@ -121,18 +122,24 @@ class SendInvoice extends Command
                                         $extraAssets = $asset_counts - $maxTier->end_range;
                                         $extraAssetCharge = $extraAssets * $extraAssetRate;
                                         $totalAmount += $extraAssetCharge;
-                                        $invoice_details['total_amount'] = $totalAmount;
+                                        $invoice_details['amount'] = $totalAmount;
                                     }
                                 }
                             } else {
                                 $price_paln_tiers = PricePlanTiers::where('price_plan_id', $price_plan_details->id)->orderBy('start_range')->get();
                                 $maxTier = $price_paln_tiers->sortByDesc('end_range')->first();
 
-                                $invoice_details['total_amount'] = $maxTier->price;
+                                $invoice_details['amount'] = $maxTier->price;
                             }
                         } else {
-                            $invoice_details['total_amount'] = $price_plan_details->unlimited_price;
+                            $invoice_details['amount'] = $price_plan_details->unlimited_price;
                         }
+
+                        $amount = $invoice_details['amount'] ?? 0.00;
+                        $invoice_details['sgst'] = $amount * 0.09;
+                        $invoice_details['cgst'] = $amount * 0.09;
+                        $invoice_details['tax_total'] = $invoice_details['sgst'] + $invoice_details['cgst'];
+                        $invoice_details['total_amount'] = $amount + $invoice_details['tax_total'];
 
                         Invoices::create([
                             'invoice_number' => $invoice_number,
@@ -144,9 +151,12 @@ class SendInvoice extends Command
                             'company_price_plans_id' => $new_company_priceplans->id,
                             'plan_start_date' => $new_company_priceplans->start_date,
                             'plan_end_date' => $new_company_priceplans->end_date,
-                            'amount' => $invoice_details['total_amount'] ?? 0,
-                            'discount' => 0,
-                            'total_amount' => $invoice_details['total_amount'] ?? 0,
+                            'amount' => $invoice_details['amount'] ?? 0.00,
+                            'discount' => 0.00,
+                            'sgst' => $invoice_details['sgst'] ?? 0.00,
+                            'cgst' => $invoice_details['cgst'] ?? 0.00,
+                            'tax_total' => $invoice_details['tax_total'] ?? 0.00,
+                            'total_amount' => $invoice_details['total_amount'] ?? 0.00,
                             'payment_status' => 'pending',
                         ]);
                     }

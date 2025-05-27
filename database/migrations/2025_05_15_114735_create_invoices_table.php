@@ -26,6 +26,9 @@ class CreateInvoicesTable extends Migration
             $table->date('plan_end_date')->nullable();
             $table->decimal('amount', 10, 2)->default(0.00);
             $table->decimal('discount', 10, 2)->default(0.00);
+            $table->decimal('sgst', 10, 2)->default(0.00);
+            $table->decimal('cgst', 10, 2)->default(0.00);
+            $table->decimal('tax_total', 10, 2)->default(0.00);
             $table->decimal('total_amount', 10, 2)->default(0.00);
             $table->string('payment_status')->default('pending');
             $table->timestamps();

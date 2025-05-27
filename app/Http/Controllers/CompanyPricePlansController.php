@@ -150,7 +150,7 @@ class CompanyPricePlansController extends Controller
                     $matchedTier = $price_paln_tiers->where('start_range', '<=', $asset_counts)->where('end_range', '>=', $asset_counts)->first();
 
                     if ($matchedTier) {
-                        $invoice_details['total_amount'] = $matchedTier->price;
+                        $invoice_details['amount'] = $matchedTier->price;
                     } else {
                         $maxTier = $price_paln_tiers->sortByDesc('end_range')->first();
                         if ($maxTier && $asset_counts > $maxTier->end_range) {
@@ -158,20 +158,26 @@ class CompanyPricePlansController extends Controller
                             $extraAssets = $asset_counts - $maxTier->end_range;
                             $extraAssetCharge = $extraAssets * $extraAssetRate;
                             $totalAmount += $extraAssetCharge;
-                            $invoice_details['total_amount'] = $totalAmount;
+                            $invoice_details['amount'] = $totalAmount;
                         }
                     }
                 } else {
                     $price_paln_tiers = PricePlanTiers::where('price_plan_id', $price_plan_details->id)->orderBy('start_range')->get();
                     $maxTier = $price_paln_tiers->sortByDesc('end_range')->first();
 
-                    $invoice_details['total_amount'] = $maxTier->price;
+                    $invoice_details['amount'] = $maxTier->price;
                 }
             } else {
-                $invoice_details['total_amount'] = $price_plan_details->unlimited_price;
+                $invoice_details['amount'] = $price_plan_details->unlimited_price;
             }
 
-            $invoice = Invoices::create([
+            $amount = $invoice_details['amount'] ?? 0.00;
+            $invoice_details['sgst'] = $amount * 0.09;
+            $invoice_details['cgst'] = $amount * 0.09;
+            $invoice_details['tax_total'] = $invoice_details['sgst'] + $invoice_details['cgst'];
+            $invoice_details['total_amount'] = $amount + $invoice_details['tax_total'];
+
+            $invoices = Invoices::create([
                 'invoice_number' => $invoice_number,
                 'generate_date' => now()->format('Y-m-d H:i:s.u'),
                 'sent_date' => $invoice_details['sent_date'],
@@ -181,15 +187,18 @@ class CompanyPricePlansController extends Controller
                 'company_price_plans_id' => $company_priceplans->id,
                 'plan_start_date' => $company_priceplans->start_date,
                 'plan_end_date' => $company_priceplans->end_date,
-                'amount' => $invoice_details['total_amount'] ?? 0,
-                'discount' => 0,
-                'total_amount' => $invoice_details['total_amount'] ?? 0,
+                'amount' => $invoice_details['amount'] ?? 0.00,
+                'discount' => 0.00,
+                'sgst' => $invoice_details['sgst'] ?? 0.00,
+                'cgst' => $invoice_details['cgst'] ?? 0.00,
+                'tax_total' => $invoice_details['tax_total'] ?? 0.00,
+                'total_amount' => $invoice_details['total_amount'] ?? 0.00,
                 'payment_status' => 'pending',
             ]);
 
             if ($startDate->isToday()) {
-                $invoice->load(['sender', 'receiver', 'companypriceplans', 'sender.organizations', 'companypriceplans.priceplan']);
-                Mail::to('bhavin.virtueinfo@gmail.com')->send(new SendInvoiceMail($invoice));
+                $invoices->load(['sender', 'receiver', 'companypriceplans', 'sender.organizations', 'companypriceplans.priceplan']);
+                Mail::to('bhavin.virtueinfo@gmail.com')->send(new SendInvoiceMail($invoices));
             }
         }
 

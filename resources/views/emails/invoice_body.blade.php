@@ -13,7 +13,12 @@
     <div class="invoice-card">
         <h2>BoTrak Invoice #{{ $invoice->invoice_number }}</h2>
 
-        <p>Hello {{ $invoice->receiver->name ?? 'Customer' }},</p>
+        <p><strong>Hello {{ $invoice->receiver->name ?? 'Customer' }}</strong>,<br>
+            CIN: {{ $invoice->receiver->CIN }}<br>
+            GST: {{ $invoice->receiver->GST }}<br>
+            {{ $invoice->receiver->organization_email }}<br>
+            {{ $invoice->receiver->phone }}
+        </p>
         <p>We've generated an invoice for your recent subscription plan:</p>
 
         <ul>
@@ -22,6 +27,8 @@
             <li><strong>End Date:</strong> {{ \Carbon\Carbon::parse($invoice->plan_end_date)->format('d/m/Y') }}</li>
             <li><strong>Amount:</strong> ₹ {{ number_format($invoice->amount, 2) }}</li>
             <li><strong>Discount:</strong> ₹ {{ number_format($invoice->discount, 2) }}</li>
+            <li><strong>SGST:</strong> ₹ {{ number_format($invoice->sgst, 2) }}</li>
+            <li><strong>CGST:</strong> ₹ {{ number_format($invoice->cgst, 2) }}</li>
             <li><strong>Total:</strong> ₹ {{ number_format($invoice->total_amount, 2) }}</li>
         </ul>
 
