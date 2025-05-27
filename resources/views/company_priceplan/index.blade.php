@@ -53,7 +53,7 @@
                                     <th>Start Date</th>
                                     <th>End Date</th>
                                     <th>Plan Status</th>
-                                    <th>History</th>
+                                    <!-- <th>History</th> -->
                                 </tr>
                             </thead>
                             <tbody>
@@ -65,9 +65,9 @@
                                             <td>{{ \Carbon\Carbon::parse($user->start_date)->format('d/m/Y') ?? '-' }}</td>
                                             <td>{{ \Carbon\Carbon::parse($user->end_date)->format('d/m/Y') ?? '-' }}</td>
                                             <td>{{ ucfirst($user->status) }}</td>
-                                            <td>
+                                            <!-- <td>
                                                 <a href="{{ route('company_priceplan.history', $user->organizations->id) }}" class="btn btn-info btn-sm">View History</a>
-                                            </td>
+                                            </td> -->
                                         <?php /*
                                         @elseif($user->status === 'completed')
                                             <td>{{ $user->organizations->name }}</td>
