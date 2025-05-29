@@ -16,4 +16,19 @@ class InvoiceController extends Controller
         $invoices = Invoices::with(['sender', 'receiver', 'companypriceplans', 'companypriceplans.priceplan'])->get();
         return view('invoice.index', compact('invoices'));
     }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $invoice = Invoices::with(['sender', 'receiver', 'companypriceplans', 'sender.organizations', 'companypriceplans.priceplan'])->where('id', $id)->first();
+
+        dd($invoice);
+
+        return view('invoice.show', compact('invoice'));
+    }
 }

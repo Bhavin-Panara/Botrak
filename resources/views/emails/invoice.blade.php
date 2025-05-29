@@ -119,21 +119,21 @@
         <tbody>
             <tr>
                 <td>#{{ $invoice->invoice_number }}</td>
-                <td class="text-right">{{ number_format($invoice->amount, 2) ?? '0.00' }}</td>
+                <td class="text-right">{{ number_format($invoice->amount, 2) ?? '0.00' }} ₹</td>
                 <td class="text-right">9%</td>
-                <td class="text-right">{{ number_format($invoice->sgst, 2) ?? '0.00' }}</td>
+                <td class="text-right">{{ number_format($invoice->sgst, 2) ?? '0.00' }} ₹</td>
                 <td class="text-right">9%</td>
-                <td class="text-right">{{ number_format($invoice->cgst, 2) ?? '0.00' }}</td>
-                <td class="text-right">{{ number_format($invoice->tax_total, 2) ?? '0.00' }}</td>
+                <td class="text-right">{{ number_format($invoice->cgst, 2) ?? '0.00' }} ₹</td>
+                <td class="text-right">{{ number_format($invoice->tax_total, 2) ?? '0.00' }} ₹</td>
             </tr>
             <tr style="font-weight: bold;">
                 <td class="text-right">Total</td>
-                <td class="text-right">{{ number_format($invoice->amount, 2) ?? '0.00' }}</td>
+                <td class="text-right">{{ number_format($invoice->amount, 2) ?? '0.00' }} ₹</td>
                 <td></td>
-                <td class="text-right">{{ number_format($invoice->sgst, 2) ?? '0.00' }}</td>
+                <td class="text-right">{{ number_format($invoice->sgst, 2) ?? '0.00' }} ₹</td>
                 <td></td>
-                <td class="text-right">{{ number_format($invoice->cgst, 2) ?? '0.00' }}</td>
-                <td class="text-right">{{ number_format($invoice->tax_total, 2) ?? '0.00' }}</td>
+                <td class="text-right">{{ number_format($invoice->cgst, 2) ?? '0.00' }} ₹</td>
+                <td class="text-right">{{ number_format($invoice->tax_total, 2) ?? '0.00' }} ₹</td>
             </tr>
             <tr>
                 <td colspan="7">Tax Amount (in words) is <b>{{ convertCurrencyWords($invoice->tax_total ?? 0.00) }}</b></td>

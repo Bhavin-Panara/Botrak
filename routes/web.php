@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
     // ---------------------- Invoice ----------------------
     Route::prefix('invoice')->group(function () {
         Route::get('/', [InvoiceController::class, 'index'])->name('invoice.index');
+        Route::get('/show/{id}', [InvoiceController::class, 'show'])->name('invoice.show');
     });
 
     // ---------------------- Price Plans ----------------------
@@ -76,6 +77,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/destroy/{id}', [CompanyPricePlansController::class, 'destroy'])->name('company_priceplan.destroy');
         Route::get('/get_plan_details/{id}', [CompanyPricePlansController::class, 'get_plan_details'])->name('company_priceplan.get_plan_details');
         Route::get('/edit/get_plan_details/{id}', [CompanyPricePlansController::class, 'get_plan_details'])->name('company_priceplan.edit_get_plan_details');
+        Route::post('/update_billing', [CompanyPricePlansController::class, 'update_billing'])->name('company_priceplan.update_billing');
     });
 });
 

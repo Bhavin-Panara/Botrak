@@ -301,4 +301,18 @@ class CompanyPricePlansController extends Controller
 
         return redirect()->route('company_priceplan.index')->with('success', 'Company Plan deleted successfully.');
     }
+    
+    public function update_billing(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:company_price_plans,id',
+            'billing_frequency' => 'required|in:one time billing,recurring billing',
+        ]);
+
+        $user_priceplans = CompanyPricePlans::findOrFail($validated['user_id']);
+        $user_priceplans->billing_frequency = $validated['billing_frequency'];
+        $user_priceplans->save();
+
+        return redirect()->back()->with('success', 'Billing frequency updated successfully.');
+    }
 }

@@ -46,8 +46,13 @@
                                     <th class="text-nowrap text-center">Plan End Date</th>
                                     <th class="text-nowrap text-center">Amount</th>
                                     <th class="text-nowrap text-center">Discount</th>
+                                    <th class="text-nowrap text-center">SGST</th>
+                                    <th class="text-nowrap text-center">CGST</th>
+                                    <th class="text-nowrap text-center">Total Tax</th>
                                     <th class="text-nowrap text-center">Total Amount</th>
                                     <th class="text-nowrap text-center">Payment Status</th>
+                                    <th class="text-nowrap text-center">Mark As Paid</th>
+                                    <th class="text-nowrap text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -63,6 +68,9 @@
                                         <td class="text-nowrap text-center">{{ $invoice->plan_end_date ? \Carbon\Carbon::parse($invoice->plan_end_date)->format('d-m-Y') : '-' }}</td>
                                         <td class="text-nowrap text-center">{{ $invoice->amount }} &#8377;</td>
                                         <td class="text-nowrap text-center">{{ $invoice->discount }} &#8377;</td>
+                                        <td class="text-nowrap text-center">{{ $invoice->sgst }} &#8377;</td>
+                                        <td class="text-nowrap text-center">{{ $invoice->cgst }} &#8377;</td>
+                                        <td class="text-nowrap text-center">{{ $invoice->tax_total }} &#8377;</td>
                                         <td class="text-nowrap text-center">{{ $invoice->total_amount }} &#8377;</td>
                                         <td class="text-nowrap text-center">
                                             @if($invoice->payment_status === 'pending')
@@ -72,6 +80,10 @@
                                             @elseif($invoice->payment_status === 'failed')
                                                 <span class="badge" style="background-color: red;">{{ $invoice->payment_status }}</span>
                                             @endif
+                                        </td>
+                                        <td class="text-nowrap">{{ $invoice->total_amount }} &#8377;</td>
+                                        <td>
+                                            <a href="{{ route('invoice.show', $invoice->id) }}" class="btn btn-primary btn-sm" title="Show Invoice"><i class="nav-icon bi bi-eye"></i></a>
                                         </td>
                                     </tr>
                                 @endforeach
