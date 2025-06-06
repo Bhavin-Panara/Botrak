@@ -41,7 +41,7 @@ class UserAssignPlan extends Command
     public function handle()
     {
         $today = Carbon::today();
-        $plans = CompanyPricePlans::with(['organizations', 'priceplan'])->get();
+        $plans = CompanyPricePlans::with(['organizations', 'priceplan'])->where(function ($query) { $query->where('status', '!=', 'cancel')->orWhereNull('status'); })->get();
         $plansByCompany = $plans->groupBy('company_id');
 
         foreach ($plansByCompany as $companyId => $companyPlans) {

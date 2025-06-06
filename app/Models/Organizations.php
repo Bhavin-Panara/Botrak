@@ -13,4 +13,9 @@ class Organizations extends Model
     protected $table = 'organizations';
 
     protected $fillable = ['id', 'name', 'contact_person', 'phone', 'organization_email', 'CIN', 'GST', 'created_at', 'updated_at', 'deleted_at', 'financial_limit', 'subscription_id', 'start_date', 'end_date'];
+
+    public function assetregisters()
+    {
+        return $this->hasMany(AssetRegisters::class, 'organization_id', 'id');
+    }
 }

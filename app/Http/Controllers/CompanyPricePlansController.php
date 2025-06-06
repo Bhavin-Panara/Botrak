@@ -14,6 +14,7 @@ use App\Models\Invoices;
 use Carbon\Carbon;
 use PDF;
 use App\Mail\SendInvoiceMail;
+use App\Mail\PlanCanceldMail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -74,7 +75,7 @@ class CompanyPricePlansController extends Controller
 
     public function store(Request $request)
     {
-        $check_future_plan = CompanyPricePlans::where('company_id', $request->company_id)->where('billing_frequency', 'recurring billing')->whereDate('start_date', '>=', Carbon::today())->first();
+        $check_future_plan = CompanyPricePlans::where('company_id', $request->company_id)->where('billing_frequency', 'recurring billing')->where('status', '!=', 'cancel')->whereDate('start_date', '>=', Carbon::today())->first();
 
         if ($check_future_plan) {
             return redirect()->back()->withInput()->with('future_plan_warning', true)
@@ -102,7 +103,7 @@ class CompanyPricePlansController extends Controller
             $startDate = Carbon::parse($request->start_date);
             $endDate = $startDate->copy()->addDays($plan->total_days - 1);
 
-            $conflict = CompanyPricePlans::where('company_id', $request->company_id)->where(function ($query) use ($startDate, $endDate) {
+            $conflict = CompanyPricePlans::where('company_id', $request->company_id)->where('status', '!=', 'cancel')->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])->orWhereBetween('end_date', [$startDate, $endDate])->orWhere(function ($query) use ($startDate, $endDate) {
                     $query->where('start_date', '<=', $startDate)->where('end_date', '>=', $endDate);
                 });
@@ -136,9 +137,11 @@ class CompanyPricePlansController extends Controller
             if ($startDate->isToday()) {
                 $invoice_details['sent_date'] = now()->format('Y-m-d H:i:s.u');
                 $invoice_details['invoice_status'] = "sent";
+                $invoice_details['payment_due_date'] = Carbon::parse($invoice_details['sent_date'])->addDays(7 - 1)->toDateString();
             } elseif ($startDate->isFuture()) {
                 $invoice_details['sent_date'] = null;
                 $invoice_details['invoice_status'] = "generated";
+                $invoice_details['payment_due_date'] = null;
             }
 
             if (!$price_plan_details->is_unlimited) {
@@ -182,7 +185,8 @@ class CompanyPricePlansController extends Controller
                 'generate_date' => now()->format('Y-m-d H:i:s.u'),
                 'sent_date' => $invoice_details['sent_date'],
                 'invoice_status' => $invoice_details['invoice_status'],
-                'invoice_sender_id' => Auth::check() ? Auth::id() : 1,
+                // 'invoice_sender_id' => Auth::check() ? Auth::id() : 1,
+                'invoice_sender_id' => 1,
                 'invoice_receiver_id' => $company_priceplans->company_id,
                 'company_price_plans_id' => $company_priceplans->id,
                 'plan_start_date' => $company_priceplans->start_date,
@@ -194,6 +198,7 @@ class CompanyPricePlansController extends Controller
                 'tax_total' => $invoice_details['tax_total'] ?? 0.00,
                 'total_amount' => $invoice_details['total_amount'] ?? 0.00,
                 'payment_status' => 'pending',
+                'payment_due_date' => $invoice_details['payment_due_date']
             ]);
 
             if ($startDate->isToday()) {
@@ -314,5 +319,35 @@ class CompanyPricePlansController extends Controller
         $user_priceplans->save();
 
         return redirect()->back()->with('success', 'Billing frequency updated successfully.');
+    }
+
+    public function cancel_plan($id)
+    {
+        $priceplans = CompanyPricePlans::with(['organizations', 'priceplan'])->findOrFail($id);
+
+        if($priceplans) {
+            $user = Organizations::where('id', $priceplans->company_id)->first();
+            if ($user) {
+                $user->subscription_id = null;
+                $user->start_date = null;
+                $user->end_date = null;
+                $user->update();
+            }
+
+            $invoice = Invoices::where('invoice_receiver_id', $priceplans->company_id)->where('company_price_plans_id', $priceplans->id)->where('plan_start_date', $priceplans->start_date)->where('plan_end_date', $priceplans->end_date)->first();
+            if($invoice){
+                $invoice->invoice_status = 'cancel';
+                $invoice->update();
+            }
+
+            $priceplans->status = 'cancel';
+            $priceplans->save();
+
+            if ($user && $user->organization_email) {
+                Mail::to('bhavin.virtueinfo@gmail.com')->send(new PlanCanceldMail($priceplans));
+            }
+        }
+
+        return redirect()->route('company_priceplan.index')->with('success', 'Company Plan cancelled successfully.');
     }
 }

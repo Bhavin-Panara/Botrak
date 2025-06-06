@@ -55,6 +55,7 @@
                                     <th>Plan Status</th>
                                     <th>Billing Frequency</th>
                                     <!-- <th>History</th> -->
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -68,7 +69,8 @@
                                             $status_color = [
                                                 'completed' => 'green',
                                                 'continue' => 'orange',
-                                                'next'     => 'blue'
+                                                'next'     => 'blue',
+                                                'cancel'     => 'red'
                                             ];
                                             $status_bgcolor = $status_color[$user->status] ?? '';
                                         @endphp
@@ -79,14 +81,36 @@
                                                 'recurring billing' => 'green',
                                             ];
                                             $billing_bgcolor = $billing_color[$user->billing_frequency] ?? '';
+
+                                            $style = "background-color: {$billing_bgcolor};";
+                                            $clickable = !in_array($user->status, ['completed', 'cancel']);
+
+                                            if ($clickable) {
+                                                $style .= ' cursor: pointer;';
+                                            }
                                         @endphp
                                         <td class="text-nowrap">
-                                            <span class="badge" style="background-color: {{ $billing_bgcolor }}; cursor:pointer;"
-                                                onclick="openModal({{ $user->id }}, '{{ $user->billing_frequency }}')">
+                                            <span class="badge" style="{{ $style }}"
+                                                @if($clickable)
+                                                    onclick="openModal({{ $user->id }}, '{{ $user->billing_frequency }}')"
+                                                @endif
+                                            >
                                                 {{ $user->billing_frequency }}
                                             </span>
                                         </td>
-
+                                        <td>
+                                            @if(in_array($user->status, ['continue', 'next']))
+                                                <button type="button"
+                                                class="btn btn-danger btn-sm"
+                                                title="Cancel Plan"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#cancelplanConfirmModal"
+                                                data-id="{{ $user->id }}"
+                                                data-route="{{ route('company_priceplan.cancel_plan', $user->id) }}">
+                                                    Cancel Plan
+                                                </button>
+                                            @endif
+                                        </td>
                                         <!-- <td>
                                             <a href="{{ route('company_priceplan.history', $user->organizations->id) }}" class="btn btn-info btn-sm">View History</a>
                                         </td> -->
@@ -180,6 +204,27 @@
     <!--end::Modal Dialog-->
 </div>
 <!--end::Modal-->
+
+<!--begin::Cancel Plan Modal-->
+<div class="modal fade" id="cancelplanConfirmModal" tabindex="-1" aria-labelledby="cancelplanConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="cancelForm" method="POST">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelplanConfirmModalLabel">Confirm Cancel Plan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">Are you sure you want to cancel the plan for this organization ?</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="submit" class="btn btn-danger">Yes, Cancel Plan</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<!--end::Cancel Plan Modal-->
 @endsection
 
 @section('pagescript')
@@ -207,6 +252,15 @@
             document.getElementById('validationError').textContent = 'Billing frequency is required.';
             document.getElementById('validationError').style.display = 'block';
         }
+    });
+
+    const cancelplanModal = document.getElementById('cancelplanConfirmModal');
+    cancelplanModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const route = button.getAttribute('data-route');
+        const form = document.getElementById('cancelForm');
+
+        form.action = route;
     });
 </script>
 @endsection

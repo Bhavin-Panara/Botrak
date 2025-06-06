@@ -31,6 +31,10 @@ class CreateInvoicesTable extends Migration
             $table->decimal('tax_total', 10, 2)->default(0.00);
             $table->decimal('total_amount', 10, 2)->default(0.00);
             $table->string('payment_status')->default('pending');
+            $table->date('payment_due_date')->nullable();
+            $table->date('last_reminder_date')->nullable();
+            $table->string('payment_reminder')->nullable();
+            $table->string('mark_as_paid')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

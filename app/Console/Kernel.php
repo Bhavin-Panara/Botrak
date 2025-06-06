@@ -14,7 +14,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\UserAssignPlan::class,
-        \App\Console\Commands\SendInvoice::class
+        \App\Console\Commands\SendInvoice::class,
+        \App\Console\Commands\PaymentReminder::class
     ];
 
     /**
@@ -27,6 +28,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('command:user_assign_plan')->everyMinute();
         $schedule->command('command:send_invoice')->everyMinute();
+        $schedule->command('command:payment_reminder')->everyMinute();
     }
 
     /**

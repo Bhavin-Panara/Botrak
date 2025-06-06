@@ -35,8 +35,13 @@
                 <!--begin::Quick Example-->
                 <div class="card card-primary card-outline mb-4">
                     <!--begin::Header-->
-                    <div class="card-header">
-                        <div class="h5 m-0">Invoices <b>#{{ $invoice->invoice_number }}</b></div>
+                    <div class="card-header d-flex align-items-center">
+                        <div class="col-6">
+                            <div class="h5 m-0">Invoices <b>#{{ $invoice->invoice_number }}</b></div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <a href="{{ route('invoice.download', $invoice->id) }}" class="btn btn-info btn-sm"><i class="bi bi-download"></i> Download Invoice</a>
+                        </div>
                     </div>
                     <!--end::Header-->
                     <!--begin::Body-->
@@ -59,9 +64,39 @@
                                     <td class="text-center">{{ \Carbon\Carbon::parse($invoice->sent_date)->format('d M Y H:m:s') }}</td>
                                 </tr>
                                 <tr>
-                                    <th class="text-center">Invoice Status</th>
-                                    <td class="text-nowrap text-center"><span class="badge" style="background-color: {{ $invoice->invoice_status === 'sent' ? 'green' : 'red' }};">{{ $invoice->invoice_status }}</span></td>
+                                    <th class="text-center">Payment Due Date</th>
+                                    <td class="text-center">{{ \Carbon\Carbon::parse($invoice->payment_due_date)->format('d M Y') }}</td>
                                 </tr>
+                                <tr>
+                                    <th class="text-center">Invoice Status</th>
+                                    <td class="text-nowrap text-center">
+                                        @if($invoice->invoice_status === 'generated')
+                                            <span class="badge" style="background-color: blue;">{{ $invoice->invoice_status }}</span>
+                                        @elseif($invoice->invoice_status === 'sent')
+                                            <span class="badge" style="background-color: green;">{{ $invoice->invoice_status }}</span>
+                                        @elseif($invoice->invoice_status === 'cancel')
+                                            <span class="badge" style="background-color: red;">{{ $invoice->invoice_status }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-center">Invoice Paymaent Status</th>
+                                    <td class="text-nowrap text-center">
+                                        @if($invoice->payment_status === 'pending')
+                                            <span class="badge" style="background-color: blue;">{{ $invoice->payment_status }}</span>
+                                        @elseif($invoice->payment_status === 'paid')
+                                            <span class="badge" style="background-color: green;">{{ $invoice->payment_status }}</span>
+                                        @elseif($invoice->payment_status === 'failed')
+                                            <span class="badge" style="background-color: red;">{{ $invoice->payment_status }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @if($invoice->payment_status === 'paid')
+                                    <tr>
+                                        <th class="text-center">Transaction Number</th>
+                                        <td class="text-center">{{ $invoice->mark_as_paid }}</td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
 
@@ -73,20 +108,28 @@
                                             <td class="text-center h5 bg-primary text-white font-weight-bold" colspan="2" style="font-weight: bold;">Invoice Sender Detais</td>
                                         </tr>
                                         <tr>
-                                            <th class="text-center">Invoice Number</th>
-                                            <td class="text-center">#{{ $invoice->invoice_number }}</td>
+                                            <th class="text-center">Company Name</th>
+                                            <td class="text-center">{{ env('SUPER_ADMIN_COMPANY') }}</td>
                                         </tr>
                                         <tr>
-                                            <th class="text-center">Generate Date</th>
-                                            <td class="text-center">{{ \Carbon\Carbon::parse($invoice->generate_date)->format('d M Y H:m:s') }}</td>
+                                            <th class="text-center">Contact Person Name</th>
+                                            <td class="text-center">{{ ucwords($invoice->sender->name) }}</td>
                                         </tr>
                                         <tr>
-                                            <th class="text-center">Sent Date</th>
-                                            <td class="text-center">{{ \Carbon\Carbon::parse($invoice->sent_date)->format('d M Y H:m:s') }}</td>
+                                            <th class="text-center">Phone Number</th>
+                                            <td class="text-center">{{ env('SUPER_ADMIN_PHONE') }}</td>
                                         </tr>
                                         <tr>
-                                            <th class="text-center">Invoice Status</th>
-                                            <td class="text-nowrap text-center"><span class="badge" style="background-color: {{ $invoice->invoice_status === 'sent' ? 'green' : 'red' }};">{{ $invoice->invoice_status }}</span></td>
+                                            <th class="text-center">Organization Email</th>
+                                            <td class="text-center">{{ $invoice->sender->email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center">CIN Number</th>
+                                            <td class="text-center">{{ env('SUPER_ADMIN_CIN') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center">GST Number</th>
+                                            <td class="text-center">{{ env('SUPER_ADMIN_GST') }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -98,154 +141,123 @@
                                             <td class="text-center h5 bg-primary text-white font-weight-bold" colspan="2" style="font-weight: bold;">Invoice Receiver Detais</td>
                                         </tr>
                                         <tr>
-                                            <th class="text-center">Invoice Number</th>
-                                            <td class="text-center">#{{ $invoice->invoice_number }}</td>
+                                            <th class="text-center">Organization Name</th>
+                                            <td class="text-center">{{ ucwords($invoice->receiver->name) }}</td>
                                         </tr>
                                         <tr>
-                                            <th class="text-center">Generate Date</th>
-                                            <td class="text-center">{{ \Carbon\Carbon::parse($invoice->generate_date)->format('d M Y H:m:s') }}</td>
+                                            <th class="text-center">Contact Person Name</th>
+                                            <td class="text-center">{{ ucwords($invoice->receiver->contact_person) }}</td>
                                         </tr>
                                         <tr>
-                                            <th class="text-center">Sent Date</th>
-                                            <td class="text-center">{{ \Carbon\Carbon::parse($invoice->sent_date)->format('d M Y H:m:s') }}</td>
+                                            <th class="text-center">Phone Number</th>
+                                            <td class="text-center">{{ $invoice->receiver->phone }}</td>
                                         </tr>
                                         <tr>
-                                            <th class="text-center">Invoice Status</th>
-                                            <td class="text-nowrap text-center"><span class="badge" style="background-color: {{ $invoice->invoice_status === 'sent' ? 'green' : 'red' }};">{{ $invoice->invoice_status }}</span></td>
+                                            <th class="text-center">Organization Email</th>
+                                            <td class="text-center">{{ $invoice->receiver->organization_email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center">CIN Number</th>
+                                            <td class="text-center">{{ $invoice->receiver->CIN }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center">GST Number</th>
+                                            <td class="text-center">{{ $invoice->receiver->GST }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
 
+                        <table class="table table-bordered table-striped mb-3">
+                            <tbody>
+                                <tr>
+                                    <td class="text-center h5 bg-primary text-white font-weight-bold" colspan="6" style="font-weight: bold;">Selected Plan Detais</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-nowrap">Plan Name</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th class="text-end">Amount</th>
+                                    <th class="text-end">Discount</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                                <tr>
+                                    <td class="text-nowrap">{{ ucwords($invoice->companypriceplans->priceplan->name) }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($invoice->plan_start_date)->format('d M Y') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($invoice->plan_end_date)->format('d M Y') }}</td>
+                                    <td class="text-end">{{ number_format($invoice->amount, 2) ?? '0.00' }} ₹</td>
+                                    <td class="text-end">{{ number_format($invoice->discount, 2) ?? '0.00' }} ₹</td>
+                                    <td class="text-end">{{ number_format($invoice->amount, 2) ?? '0.00' }} ₹</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" style="padding: 20px;"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-end"><b>Discount</b></td>
+                                    <td>{{ number_format($invoice->discount, 2) ?? '0.00' }} ₹</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-end"><b>SGST</b></td>
+                                    <td>{{ number_format($invoice->sgst, 2) ?? '0.00' }} ₹</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-end"><b>CGST</b></td>
+                                    <td>{{ number_format($invoice->cgst, 2) ?? '0.00' }} ₹</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-end"><b>Total Amount</b></td>
+                                    <td><b>{{ number_format($invoice->total_amount, 2) ?? '0.00' }} ₹</b></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6">Amount Chargeable (in words) is <b>{{ convertCurrencyWords($invoice->total_amount ?? 0.00) }}</b></td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-
-
-
-
-
-    
-    <table>
-        <tbody>
-            <tr>
-                <td class="border-none padding-0">
-                    <h3 style="font-size: 16px;">From:</h3>
-                    <p><b>{{ $invoice->sender->name }}</b></p>
-                    <p>CIN: {{ $invoice->sender->organizations->CIN }}</p>
-                    <p>GST: {{ $invoice->sender->organizations->GST }}</p>
-                    <p>{{ $invoice->sender->email }}</p>
-                    <p class="margin-0">{{ $invoice->sender->organizations->phone ?? '-' }}</p>
-                </td>
-                <td class="border-none padding-0">
-                    <h3 class="text-right" style="font-size: 16px;">To:</h3>
-                    <p class="text-right"><b>{{ $invoice->receiver->name }}</b></p>
-                    <p class="text-right">CIN: {{ $invoice->receiver->CIN }}</p>
-                    <p class="text-right">GST: {{ $invoice->receiver->GST }}</p>
-                    <p class="text-right">{{ $invoice->receiver->organization_email }}</p>
-                    <p class="text-right margin-0">{{ $invoice->receiver->phone }}</p>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <table class="margin-bottom-0">
-        <thead>
-            <tr>
-                <th>Plan Name</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th class="text-right">Amount</th>
-                <th class="text-right">Discount</th>
-                <th class="text-right">Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td style="text-wrap-mode: nowrap;">{{ $invoice->companypriceplans->priceplan->name }}</td>
-                <td>{{ \Carbon\Carbon::parse($invoice->plan_start_date)->format('d/m/Y') }}</td>
-                <td>{{ \Carbon\Carbon::parse($invoice->plan_end_date)->format('d/m/Y') }}</td>
-                <td class="text-right">{{ number_format($invoice->amount, 2) ?? '0.00' }} ₹</td>
-                <td class="text-right">{{ number_format($invoice->discount, 2) ?? '0.00' }} ₹</td>
-                <td class="text-right">{{ number_format($invoice->amount, 2) ?? '0.00' }} ₹</td>
-            </tr>
-            <tr>
-                <td colspan="6" style="padding: 15px;"></td>
-            </tr>
-            <tr>
-                <td colspan="5" class="text-right"><b>Discount</b></td>
-                <td>{{ number_format($invoice->discount, 2) ?? '0.00' }} ₹</td>
-            </tr>
-            <tr>
-                <td colspan="5" class="text-right"><b>SGST</b></td>
-                <td>{{ number_format($invoice->sgst, 2) ?? '0.00' }} ₹</td>
-            </tr>
-            <tr>
-                <td colspan="5" class="text-right"><b>CGST</b></td>
-                <td>{{ number_format($invoice->cgst, 2) ?? '0.00' }} ₹</td>
-            </tr>
-            <tr>
-                <td colspan="5" class="text-right"><b>Total Amount</b></td>
-                <td><b>{{ number_format($invoice->total_amount, 2) ?? '0.00' }} ₹</b></td>
-            </tr>
-            <tr>
-                <td colspan="6">Amount Chargeable (in words) is <b>{{ convertCurrencyWords($invoice->total_amount ?? 0.00) }}</b></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <table class="margin-top-0">
-        <thead>
-            <tr>
-                <th rowspan="2">Invoice</th>
-                <th rowspan="2" class="text-right">Taxable Value</th>
-                <th colspan="2" class="text-center">SGST</th>
-                <th colspan="2" class="text-center">CGST</th>
-                <th rowspan="2" class="text-right">Total Tax Amount</th>
-            </tr>
-            <tr>
-                <th class="text-right">Rate</th>
-                <th class="text-right">Amount</th>
-                <th class="text-right">Rate</th>
-                <th class="text-right">Amount</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>#{{ $invoice->invoice_number }}</td>
-                <td class="text-right">{{ number_format($invoice->amount, 2) ?? '0.00' }} ₹</td>
-                <td class="text-right">9%</td>
-                <td class="text-right">{{ number_format($invoice->sgst, 2) ?? '0.00' }} ₹</td>
-                <td class="text-right">9%</td>
-                <td class="text-right">{{ number_format($invoice->cgst, 2) ?? '0.00' }} ₹</td>
-                <td class="text-right">{{ number_format($invoice->tax_total, 2) ?? '0.00' }} ₹</td>
-            </tr>
-            <tr style="font-weight: bold;">
-                <td class="text-right">Total</td>
-                <td class="text-right">{{ number_format($invoice->amount, 2) ?? '0.00' }} ₹</td>
-                <td></td>
-                <td class="text-right">{{ number_format($invoice->sgst, 2) ?? '0.00' }} ₹</td>
-                <td></td>
-                <td class="text-right">{{ number_format($invoice->cgst, 2) ?? '0.00' }} ₹</td>
-                <td class="text-right">{{ number_format($invoice->tax_total, 2) ?? '0.00' }} ₹</td>
-            </tr>
-            <tr>
-                <td colspan="7">Tax Amount (in words) is <b>{{ convertCurrencyWords($invoice->tax_total ?? 0.00) }}</b></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <h3 style="font-size: 16px;">Terms & Conditions</h3>
-    <p>Payment is due within 7 days from the invoice date. Late payments may be subject to additional fees. Please contact <b>{{ $invoice->sender->email }}</b> for any questions.</p>
-
-
-
-
-
-
-
-
-
-
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <td class="text-center h5 bg-primary text-white font-weight-bold" colspan="7" style="font-weight: bold;">Selected Plan Tax Detais</td>
+                                </tr>
+                                <tr>
+                                    <th rowspan="2">Invoice</th>
+                                    <th rowspan="2" class="text-end">Taxable Value</th>
+                                    <th colspan="2" class="text-center">SGST</th>
+                                    <th colspan="2" class="text-center">CGST</th>
+                                    <th rowspan="2" class="text-end">Total Tax Amount</th>
+                                </tr>
+                                <tr>
+                                    <th class="text-end">Rate</th>
+                                    <th class="text-end">Amount</th>
+                                    <th class="text-end">Rate</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#{{ $invoice->invoice_number }}</td>
+                                    <td class="text-end">{{ number_format($invoice->amount, 2) ?? '0.00' }} ₹</td>
+                                    <td class="text-end">9%</td>
+                                    <td class="text-end">{{ number_format($invoice->sgst, 2) ?? '0.00' }} ₹</td>
+                                    <td class="text-end">9%</td>
+                                    <td class="text-end">{{ number_format($invoice->cgst, 2) ?? '0.00' }} ₹</td>
+                                    <td class="text-end">{{ number_format($invoice->tax_total, 2) ?? '0.00' }} ₹</td>
+                                </tr>
+                                <tr class="fw-bold">
+                                    <td class="text-end">Total</td>
+                                    <td class="text-end">{{ number_format($invoice->amount, 2) ?? '0.00' }} ₹</td>
+                                    <td></td>
+                                    <td class="text-end">{{ number_format($invoice->sgst, 2) ?? '0.00' }} ₹</td>
+                                    <td></td>
+                                    <td class="text-end">{{ number_format($invoice->cgst, 2) ?? '0.00' }} ₹</td>
+                                    <td class="text-end">{{ number_format($invoice->tax_total, 2) ?? '0.00' }} ₹</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="7">Tax Amount (in words) is <b>{{ convertCurrencyWords($invoice->tax_total ?? 0.00) }}</b></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                     <!--end::Body-->
                 </div>

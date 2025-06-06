@@ -14,7 +14,7 @@ class CompanyPricePlans extends Model
 
     protected $fillable = ['id', 'company_id', 'price_plan_id', 'start_date', 'end_date', 'status', 'created_at', 'updated_at', 'deleted_at', 'billing_frequency'];
 
-    // status = completed, continue, next, soon
+    // status = completed, continue, next, soon, cancel
 
     protected $dates = ['start_date', 'end_date'];
 

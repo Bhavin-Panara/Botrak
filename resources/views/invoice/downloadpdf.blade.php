@@ -27,7 +27,7 @@
                     <h2 class="text-right">Invoice</h2>
                     <p class="text-right">Invoice: #{{ $invoice->invoice_number }}</p>
                     <p class="text-right">Date: {{ \Carbon\Carbon::parse($invoice->sent_date)->format('d/m/Y H:i:s') }}</p>
-                    <p style="color: {{ $invoice->payment_reminder === null ? 'black' : 'red' }};" class="text-right margin-0">Payment Due Date: {{ \Carbon\Carbon::parse($invoice->payment_due_date)->format('d/m/Y') }}</p>
+                    <p class="text-right margin-0">Payment Due Date: {{ \Carbon\Carbon::parse($invoice->payment_due_date)->format('d/m/Y') }}</p>
                 </td>
             </tr>
         </tbody>
@@ -57,12 +57,6 @@
             </tr>
         </tbody>
     </table>
-
-    @if($invoice->payment_reminder !== null)
-        <p><b>Dear {{ ucwords($invoice->receiver->contact_person) }},</b></p>
-        <p>This is a friendly reminder that the payment for the following invoice is <b>overdue</b>. We kindly request you to clear the dues at your earliest convenience.</p>
-        <p>Please find the details of the invoice below:</p>
-    @endif
 
     <table class="margin-bottom-0">
         <thead>
@@ -151,16 +145,6 @@
     </table>
 
     <h3 style="font-size: 16px;">Terms & Conditions</h3>
-
-    @if($invoice->payment_reminder === null)
-        <p>Payment is due within 7 days from the invoice date. Late payments may be subject to additional fees. Please contact <b>{{ $invoice->sender->email }}</b> for any questions.</p>
-    @else
-        <p>Payment is due as mentioned above. Late payments may attract additional charges. For any queries, contact <b>{{ $invoice->sender->email }}</b>.</p>
-        <p>Thank you for your prompt attention to this matter.</p>
-    @endif
-
-    <div class="text-right">
-        <a href="#" target="_blank">Pay Now</a>
-    </div>
+    <p>Payment is due within 7 days from the invoice date. Late payments may be subject to additional fees. Please contact <b>{{ $invoice->sender->email }}</b> for any questions.</p>
 </body>
 </html>

@@ -12,9 +12,9 @@ class Invoices extends Model
 
     protected $table = 'invoices';
 
-    protected $fillable = ['id', 'invoice_number', 'generate_date', 'sent_date', 'invoice_status', 'invoice_sender_id', 'invoice_receiver_id', 'company_price_plans_id', 'plan_start_date', 'plan_end_date', 'amount', 'discount', 'sgst', 'cgst', 'tax_total', 'total_amount', 'payment_status', 'created_at', 'updated_at', 'deleted_at'];
+    protected $fillable = ['id', 'invoice_number', 'generate_date', 'sent_date', 'invoice_status', 'invoice_sender_id', 'invoice_receiver_id', 'company_price_plans_id', 'plan_start_date', 'plan_end_date', 'amount', 'discount', 'sgst', 'cgst', 'tax_total', 'total_amount', 'payment_status', 'payment_due_date', 'last_reminder_date', 'payment_reminder', 'mark_as_paid', 'created_at', 'updated_at', 'deleted_at'];
 
-    // invoice_status = generated, sent
+    // invoice_status = generated, sent, cancel
     // payment_status = pending, paid, failed
 
     public function sender()

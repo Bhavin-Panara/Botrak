@@ -5,7 +5,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\ReportController;
 // use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PricePlansController;
 use App\Http\Controllers\CompanyPricePlansController;
@@ -49,11 +51,24 @@ Route::middleware('auth')->group(function () {
     Route::prefix('asset')->group(function () {
         Route::get('/', [UserController::class, 'asset'])->name('asset.index');
     });
+    
+    // ---------------------- Organization ----------------------
+    Route::prefix('organization')->group(function () {
+        Route::get('/', [OrganizationController::class, 'asset'])->name('organization.index');
+    });
+    
+    // ---------------------- Report ----------------------
+    Route::prefix('report')->group(function () {
+        Route::get('/', function () { return view('report.index'); })->name('report.index');
+        Route::get('/asset_count', [ReportController::class, 'asset_count'])->name('report.asset_count');
+    });
 
     // ---------------------- Invoice ----------------------
     Route::prefix('invoice')->group(function () {
         Route::get('/', [InvoiceController::class, 'index'])->name('invoice.index');
         Route::get('/show/{id}', [InvoiceController::class, 'show'])->name('invoice.show');
+        Route::post('/mark_as_paid', [InvoiceController::class, 'mark_as_paid'])->name('invoice.mark_as_paid');
+        Route::get('/download/{id}', [InvoiceController::class, 'download'])->name('invoice.download');
     });
 
     // ---------------------- Price Plans ----------------------
@@ -75,6 +90,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit/{id}', [CompanyPricePlansController::class, 'edit'])->name('company_priceplan.edit');
         Route::put('/update/{id}', [CompanyPricePlansController::class, 'update'])->name('company_priceplan.update');
         Route::delete('/destroy/{id}', [CompanyPricePlansController::class, 'destroy'])->name('company_priceplan.destroy');
+        Route::post('/cancel_plan/{id}', [CompanyPricePlansController::class, 'cancel_plan'])->name('company_priceplan.cancel_plan');
         Route::get('/get_plan_details/{id}', [CompanyPricePlansController::class, 'get_plan_details'])->name('company_priceplan.get_plan_details');
         Route::get('/edit/get_plan_details/{id}', [CompanyPricePlansController::class, 'get_plan_details'])->name('company_priceplan.edit_get_plan_details');
         Route::post('/update_billing', [CompanyPricePlansController::class, 'update_billing'])->name('company_priceplan.update_billing');

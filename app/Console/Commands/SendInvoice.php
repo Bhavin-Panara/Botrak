@@ -49,7 +49,7 @@ class SendInvoice extends Command
     public function handle()
     {
         $today = Carbon::today();
-        $plans = CompanyPricePlans::with(['organizations', 'priceplan'])->get();
+        $plans = CompanyPricePlans::with(['organizations', 'priceplan'])->where(function ($query) { $query->where('status', '!=', 'cancel')->orWhereNull('status'); })->get();
         $plansByCompany = $plans->groupBy('company_id');
 
         foreach ($plansByCompany as $companyId => $companyPlans) {
@@ -67,10 +67,13 @@ class SendInvoice extends Command
                     ->where('company_price_plans_id', $plan->id)
                     ->first();
 
+                    $now = now();
+
                     if (!is_null($invoices)) {
                         $invoices->update([
-                            'sent_date' => now()->format('Y-m-d H:i:s.u'),
-                            'invoice_status' => 'sent'
+                            'sent_date' => $now->format('Y-m-d H:i:s.u'),
+                            'invoice_status' => 'sent',
+                            'payment_due_date' => $now->copy()->addDays(7 - 1)->toDateString()
                         ]);
 
                         Mail::to('bhavin.virtueinfo@gmail.com')->send(new SendInvoiceMail($invoices));
@@ -104,6 +107,7 @@ class SendInvoice extends Command
                         $invoice_details = [];
                         $invoice_details['sent_date'] = null;
                         $invoice_details['invoice_status'] = "generated";
+                        $invoice_details['payment_due_date'] = null;
 
                         if (!$price_plan_details->is_unlimited) {
                             $extraAssetRate = $price_plan_details->per_asset_price;
@@ -158,6 +162,7 @@ class SendInvoice extends Command
                             'tax_total' => $invoice_details['tax_total'] ?? 0.00,
                             'total_amount' => $invoice_details['total_amount'] ?? 0.00,
                             'payment_status' => 'pending',
+                            'payment_due_date' => $invoice_details['payment_due_date']
                         ]);
                     }
                 }

@@ -12,7 +12,7 @@
                 >
                 <h1 class="mb-0"><b>Bo</b>Trak</h1>
             </a>
-            <p class="mb-0 text-center"><small>nainit.virtueinfo@gmail.com / 6vXNHHQUmNwr9nc</small></p>
+            <p class="mb-0 text-center"><small>akshay.vadher@botreetechnologies.com / 6vXNHHQUmNwr9nc</small></p>
         </div>
         <div class="card-body login-card-body">
 

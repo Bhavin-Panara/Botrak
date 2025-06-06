@@ -33,10 +33,18 @@ class SendInvoiceMail extends Mailable
     {
         $pdf = PDF::loadView('emails.invoice', ['invoice' => $this->invoice]);
 
-        return $this->subject('BoTrak Invoice #' . $this->invoice->invoice_number)
-                    ->view('emails.invoice_body') // Optional HTML content
-                    ->attachData($pdf->output(), $this->invoice->invoice_number . '.pdf', [
-                        'mime' => 'application/pdf',
-                    ]);
+        if ($this->invoice->payment_reminder === null) {
+            return $this->subject('BoTrak Invoice #' . $this->invoice->invoice_number)
+                        ->view('emails.invoice_body') // Optional HTML content
+                        ->attachData($pdf->output(), $this->invoice->invoice_number . '.pdf', [
+                            'mime' => 'application/pdf',
+                        ]);
+        } else {
+            return $this->subject('BoTrak Payment Reminder Invoice #' . $this->invoice->invoice_number)
+                        ->view('emails.invoice_payreminder_body') // Optional HTML content
+                        ->attachData($pdf->output(), $this->invoice->invoice_number . '.pdf', [
+                            'mime' => 'application/pdf',
+                        ]);
+        }
     }
 }

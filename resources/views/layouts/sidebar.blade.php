@@ -47,6 +47,13 @@
                     </a>
                 </li> -->
 
+                <li class="nav-item">
+                    <a href="{{ route('organization.index') }}" class="nav-link {{ request()->segment(1) == 'organization' ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-building"></i>
+                        <p>Organizations</p>
+                    </a>
+                </li>
+
                 <li class="nav-header">Price Plan Management</li>
                 <li class="nav-item">
                     <a href="{{ route('price_plans.index') }}" class="nav-link {{ request()->segment(1) == 'price_plans' ? 'active' : '' }}">
@@ -64,6 +71,12 @@
                     <a href="{{ route('invoice.index') }}" class="nav-link {{ request()->segment(1) == 'invoice' ? 'active' : '' }}">
                         <i class="nav-icon bi bi-receipt"></i>
                         <p>Invoice</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('report.index') }}" class="nav-link {{ request()->segment(1) == 'report' ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-clipboard-data"></i>
+                        <p>Report</p>
                     </a>
                 </li>
 

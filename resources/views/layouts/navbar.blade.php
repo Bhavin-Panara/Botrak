@@ -38,7 +38,7 @@
                     class="user-image rounded-circle shadow"
                     alt="User Image"
                     /> -->
-                <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
+                <span class="d-none d-md-inline">{{ ucwords(Auth::user()->name) }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                     <!--begin::User Image-->
@@ -54,32 +54,22 @@
                                 <table class="table table-bordered">
                                     <tbody>
                                         <tr class="align-middle">
-                                            <th class="small p-1">Contact person</th>
-                                            <td class="small p-1">{{ Auth::user()->organizations?->contact_person ?? '-' }}</td>
+                                            <td class="small p-1"><strong>{{ ucwords(Auth::user()->name) }}</strong></td>
                                         </tr>
                                         <tr class="align-middle">
-                                            <th class="small p-1">Phone</th>
-                                            <td class="small p-1">{{ Auth::user()->organizations?->phone ?? '-' }}</td>
+                                            <td class="small p-1"><strong>Phone:</strong> {{ env('SUPER_ADMIN_PHONE') }}</td>
                                         </tr>
                                         <tr class="align-middle">
-                                            <th class="small p-1">Organization email</th>
-                                            <td class="small p-1">{{ Auth::user()->organizations?->organization_email ?? '-' }}</td>
+                                            <td class="small p-1"><small>{{ Auth::user()->email ?? '-' }}</small></td>
                                         </tr>
                                         <tr class="align-middle">
-                                            <th class="small p-1">CIN</th>
-                                            <td class="small p-1">{{ Auth::user()->organizations?->CIN ?? '-' }}</td>
+                                            <td class="small p-1"><strong>CIN:</strong> {{ env('SUPER_ADMIN_CIN') }}</td>
                                         </tr>
                                         <tr class="align-middle">
-                                            <th class="small p-1">GST</th>
-                                            <td class="small p-1">{{ Auth::user()->organizations?->GST ?? '-' }}</td>
+                                            <td class="small p-1"><strong>GST:</strong> {{ env('SUPER_ADMIN_GST') }}</td>
                                         </tr>
                                         <tr class="align-middle">
-                                            <th class="small p-1">Financial limit</th>
-                                            <td class="small p-1">{{ Auth::user()->organizations?->financial_limit ?? '-' }}</td>
-                                        </tr>
-                                        <tr class="align-middle">
-                                            <th class="small p-1">Member since</th>
-                                            <td class="small p-1">{{ \Carbon\Carbon::parse(Auth::user()->created_at)->translatedFormat('d F Y') }}</td>
+                                            <td class="small p-1"><strong>Since:</strong> {{ \Carbon\Carbon::parse(Auth::user()->created_at)->translatedFormat('d F Y') }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
